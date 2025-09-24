@@ -8,11 +8,13 @@
 import SwiftUI
 
 // A single row in the table
-struct HabitEntry: Identifiable {
-    let id = UUID()         // unique id so List can loop
+struct HabitEntry: Identifiable, Codable {
+    var id: UUID = UUID()         // unique id so List can loop
     var habit: String       // what the user typed
     var date: Date          // when it was added
 }
+
+private let habitsKey = "habits.v1"
 
 struct ContentView: View {
     // the list of rows in the table
@@ -110,6 +112,7 @@ struct ContentView: View {
                         let now = Date()
                         if !habitText.isEmpty {
                             entries.append(HabitEntry(habit: habitText, date: now))
+                            saveHabits()
                             habitText = ""
                             textFieldIsFocused = false
                         }
@@ -129,6 +132,7 @@ struct ContentView: View {
             .padding()
             .background(Color.blue)             // blue page background
             .navigationTitle("Habit Tracker")
+            .onAppear { loadHabits() }
             .scrollDismissesKeyboard(.interactively) // dragging can hide keyboard
         }
     }
@@ -139,6 +143,21 @@ struct ContentView: View {
         df.dateStyle = .medium   // e.g., Sep 23, 2025
         df.timeStyle = .short    // e.g., 10:17 PM
         return df.string(from: date)
+    }
+    
+    private func saveHabits() {
+        if let data = try? JSONEncoder().encode(entries) {
+            UserDefaults.standard.set(data, forKey: habitsKey)
+        }
+    }
+
+    private func loadHabits() {
+        if let data = UserDefaults.standard.data(forKey: habitsKey),
+           let decoded = try? JSONDecoder().decode([HabitEntry].self, from: data) {
+            entries = decoded
+            // keep your order rule (oldest at top)
+            entries.sort { $0.date < $1.date }
+        }
     }
 }
 
