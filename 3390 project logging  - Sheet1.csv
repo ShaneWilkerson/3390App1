@@ -1,0 +1,14 @@
+Resource ,Takeaway ,Time 
+https://chatgpt.com/c/68be6b7b-4b60-8328-81e3-82e955e44242,Best stack and setup for user friendly first timer,10 min
+https://www.youtube.com/watch?v=nAchMctX4YA&ab_channel=Fireship,swift basics,3 min
+https://www.youtube.com/watch?v=xkgaIm7QxK0&ab_channel=CodeWithChris,Full breakdown of swift,30 min
+https://www.youtube.com/watch?v=34tBymWdACk,Really helped with buttons and properties ,20 min 
+https://www.youtube.com/watch?v=HZ6kMyj44gE,Helped me understand the whole environment better ,8 min 
+https://developer.apple.com/documentation/SwiftUI/NavigationStack,Understand navigation stack (kind of like storing data like arrays),10 min 
+https://developer.apple.com/documentation/Swift/Identifiable,Struct help to create each habit entry ,10 min 
+https://developer.apple.com/documentation/swiftui/divider,Divide hstack elements ,5 min 
+https://www.youtube.com/watch?v=fyztLZTEVU4,short video on spacers and how to use ,7 min 
+https://developer.apple.com/documentation/Foundation/Date,"how to use date to capture time, date, etc",15 min 
+https://developer.apple.com/documentation/foundation/date/formatted(date:time:),Date and time converter ,10 min 
+https://developer.apple.com/documentation/foundation/jsonencoder,Save to UserDefault to save habits ,20 min 
+https://chatgpt.com/c/68d39a73-218c-832f-b8b2-1d87464635c5,Help with saving habit list and loading ,10 min 

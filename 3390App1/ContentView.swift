@@ -2,16 +2,18 @@
 //  ContentView.swift
 //  3390App1
 //
-//  Created by Shane Wilkerson on 9/22/25.
+//  Created by Shane Wilkerson on 9/20/25.
 //
 
 import SwiftUI
 
-// A single row in the table
+// struct for each different habit entry
+// Identifiable so each entry is different
+// Added Codable for autosaving with jsonencoder
 struct HabitEntry: Identifiable, Codable {
-    var id: UUID = UUID()         // unique id so List can loop
-    var habit: String       // what the user typed
-    var date: Date          // when it was added
+    var id: UUID = UUID()       // used xcode helper to fix 
+    var habit: String       // string for whatever user types
+    var date: Date
 }
 
 private let habitsKey = "habits.v1"
@@ -23,64 +25,75 @@ struct ContentView: View {
     @State private var habitText: String = ""
     // used to show/hide the keyboard in a simple way
     @FocusState private var textFieldIsFocused: Bool
+    // For confirmation
+    @State private var showClearConfirm = false
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .center, spacing: 12) {
 
-                // Title (blue/yellow theme)
+                // Title
                 Text("Habit List")
                     .font(.title2).bold()
                     .foregroundColor(.yellow)
 
-                // Header with two column titles + divider
+                // Hstack for 2 columns
                 HStack(spacing: 0) {
+                    
+                    // Left heading
                     Text("Habit")
                         .font(.headline)
                         .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity, alignment: .center)
-
+                        .frame(maxWidth: .infinity, alignment: .center) //added .infinity to take all the space
+                    
+                    //Divide 2 hstack elemets
                     Divider()
                         .frame(height: 20)
-                        .background(Color.gray.opacity(0.5))
+                        .background(Color.black)
 
+                    // Right heading
                     Text("Date")
                         .font(.headline)
                         .foregroundColor(.blue)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.horizontal, 8)
+                
+                // modifiers for the hstack
+                
+                .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
 
-                // The “table” area
+                // table grid
                 List {
                     if entries.isEmpty {
-                        // simple placeholder
+                        // if HabitEntry list is empty
                         HStack {
+                            // simple message if empty
                             Text("No habits yet")
-                                .foregroundStyle(.secondary)
+                                .foregroundColor(.gray)
                                 .frame(maxWidth: .infinity, alignment: .center)
                             Spacer()
                         }
                     } else {
-                        // one row per entry: left = habit, right = date
-                        // one row per entry: left = habit, right = date, with a vertical line
+                        
+                        // For each habit entry, created hstack for left and right side
+                        
                         ForEach(entries) { entry in
                             HStack(spacing: 0) {
-                                // LEFT: habit text
+                                // insert habit text
                                 Text(entry.habit)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.vertical, 8)
-                                    .padding(.trailing, 8)      // space before the line
+                                    .padding(.trailing, 8)      // before the line
 
-                                // vertical divider between columns
+                                // divider
                                 Divider()
-                                    .frame(width: 1)            // thin line
-                                    .background(Color.gray.opacity(0.3))
+                                    .frame(width: 1)
+                                    .background(Color.black)
 
-                                // RIGHT: date text
+                                // insert date
                                 Text(dateString(from: entry.date))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.vertical, 8)
@@ -89,35 +102,39 @@ struct ContentView: View {
                         }
                     }
                 }
+                // For the table
                 .listStyle(.plain)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.gray.opacity(0.4), lineWidth: 1)
-                )
+                    .overlay( RoundedRectangle(cornerRadius: 6) .stroke(Color.gray.opacity(0.4), lineWidth: 1) )
 
-                // Input area at the bottom: “Habit:”  [text field]  [Add]
+                // Habit adder and add button
                 HStack(spacing: 12) {
                     Text("Habit:")
                         .font(.headline)
                         .foregroundColor(.yellow)
 
-                    TextField("e.g., Walked my dog", text: $habitText)
+                    // TextField for editable text box with placeholder
+                    // $habitText for @State var habitText
+                    TextField("ex: Walked my dog", text: $habitText)
                         .textFieldStyle(.roundedBorder)
-                        .submitLabel(.done)
+                        .submitLabel(.done)     // changes keyboard to done
+                        // connects @FocusState var textFieldIsFocused: Bool
                         .focused($textFieldIsFocused)
-                        .onSubmit { textFieldIsFocused = false }
+                        .onSubmit { textFieldIsFocused = false } //dismiss keyboard
                         .frame(maxWidth: .infinity)        // <-- lets the button keep some space
 
+                    // add button
                     Button("Add") {
-                        let now = Date()
+                        let now = Date() // stores date in now
+                        // make sure there's something typed
                         if !habitText.isEmpty {
                             entries.append(HabitEntry(habit: habitText, date: now))
-                            saveHabits()
-                            habitText = ""
+                            saveHabits()    // saves code to User Default and to HabitEntry
+                            habitText = ""      //clear after
                             textFieldIsFocused = false
                         }
                     }
-                    // Simple, always-visible style (no “borderedProminent” dimming)
+                    
+                    // style for section
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(habitText.isEmpty ? Color.yellow.opacity(0.5) : Color.yellow)
@@ -126,36 +143,60 @@ struct ContentView: View {
                     .disabled(habitText.isEmpty)
                 }
                 .padding(.top, 8)
-                .padding(.bottom, 14)   // <-- keeps it above the home indicator
+                .padding(.bottom, 14)
+                
+                // Clear All button
+                Button("Clear All") { showClearConfirm = true } // @State var showClearConfirm
+                .buttonStyle(.borderedProminent)    // bold button
+                .tint(.red)                // tint to fill the background
+                .foregroundColor(.white)
+                .padding(.top, 4)
+                // if tapped, confirmation appears, removes all entries if confirmed
+                //
+                .confirmationDialog("Delete all habits?", isPresented: $showClearConfirm, titleVisibility: .visible) {
+                    Button("Delete All", role: .destructive) {
+                        entries.removeAll()
+                        saveHabits() //saves no entries if confirmed
+                    }
+                    Button("Cancel", role: .cancel) {} // cancel optioin
+                }
+
 
             }
             .padding()
             .background(Color.blue)             // blue page background
-            .navigationTitle("Habit Tracker")
+            .navigationTitle("Habit Tracker")   // Very top title
             .onAppear { loadHabits() }
-            .scrollDismissesKeyboard(.interactively) // dragging can hide keyboard
+            .scrollDismissesKeyboard(.interactively) // hide keyboard if scroll
         }
     }
 
-    // Simple date → string helper
+    // Helper function
+    // Date to String
     private func dateString(from date: Date) -> String {
         let df = DateFormatter()
-        df.dateStyle = .medium   // e.g., Sep 23, 2025
-        df.timeStyle = .short    // e.g., 10:17 PM
+        df.dateStyle = .medium   // Date
+        df.timeStyle = .short    // Time
         return df.string(from: date)
     }
     
+    // Another helper function
+    // save habits when exiting to UserDefaults
     private func saveHabits() {
-        if let data = try? JSONEncoder().encode(entries) {
-            UserDefaults.standard.set(data, forKey: habitsKey)
+        if let data = try? JSONEncoder().encode(entries) { // use try to safely try to save
+            UserDefaults.standard.set(data, forKey: habitsKey) // key set above
         }
     }
 
+    // Helper function again
+    // loads on startup
     private func loadHabits() {
+        // checks on the UserDefault data using the key
         if let data = UserDefaults.standard.data(forKey: habitsKey),
+           // put data back into the HabitEntry array
            let decoded = try? JSONDecoder().decode([HabitEntry].self, from: data) {
             entries = decoded
-            // keep your order rule (oldest at top)
+            // oldest at top
             entries.sort { $0.date < $1.date }
         }
     }
